@@ -13,26 +13,22 @@ import fomjar.server.session.FjSessionPath;
 import fomjar.server.session.FjSessionTask;
 import net.sf.json.JSONObject;
 
-public class SessionTaskUserRequestFromWCA implements FjSessionTask {
+public class SessionTaskUserRequest implements FjSessionTask {
     
-    private static final Logger logger = Logger.getLogger(SessionTaskUserRequestFromWCA.class);
+    private static final Logger logger = Logger.getLogger(SessionTaskUserRequest.class);
     
     @Override
     public boolean onSession(FjSessionPath path, FjMessageWrapper wrapper) {
         FjSessionContext context = path.context();
         FjDscpMessage msg = (FjDscpMessage) wrapper.message();
-        if (!msg.fs().startsWith("wca")) {
-            logger.error("invalid message, not come from wca: " + msg);
-            return false;
-        }
-        
         JSONObject args = msg.argsToJsonObject();
         String content = args.getString("content");
+        
         switch (context.getInteger("business.type")) {
         case SkiCommon.ISIS.INST_ECOM_APPLY_RETURN:
             switch (content.toLowerCase()) {
-            case "notuse":
-                processEnsureNotuse(context);
+            case "da":
+                processEnsureDeactive(context);
                 break;
             default:
                 logger.error("unrecognized user request: " + content);
@@ -46,7 +42,7 @@ public class SessionTaskUserRequestFromWCA implements FjSessionTask {
         return true;
     }
     
-    private static void processEnsureNotuse(FjSessionContext context) {
+    private static void processEnsureDeactive(FjSessionContext context) {
         @SuppressWarnings("unchecked")
         Map<String, String> account = (Map<String, String>) context.get("account");
         JSONObject args2wa = new JSONObject();
